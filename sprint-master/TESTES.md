@@ -14,6 +14,7 @@
 | Excluir responsável sem uso | Remover um responsável sem atividade vinculada | Responsável sai da lista | Pendente |
 | Bloquear exclusão em uso | Tentar remover responsável já usado em atividade | Sistema impede a exclusão | Pendente |
 | Cadastrar projeto | Preencher nome, descrição e prazo | Projeto aparece na lista | Pendente |
+| Editar projeto | Alterar nome, descrição ou prazo de um projeto | Dados atualizados aparecem no card | Pendente |
 | Excluir projeto | Clicar no botão de exclusão do projeto | Projeto sai da lista | Pendente |
 | Persistir projeto | Recarregar a página | Projeto continua aparecendo | Pendente |
 | Cadastrar atividade | Adicionar atividade em um projeto | Atividade aparece no projeto | Pendente |

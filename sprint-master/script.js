@@ -26,6 +26,7 @@ const projectCardTemplate = document.querySelector("#project-card-template");
 
 let members = loadMembers();
 let projects = loadProjects();
+let editingProjectId = null;
 
 function loadMembers() {
   try {
@@ -168,6 +169,24 @@ function createTrashIcon() {
   `;
 }
 
+function updateProject(projectId, updates) {
+  projects = projects.map((project) => (
+    project.id === projectId
+      ? {
+          ...project,
+          name: updates.name,
+          description: updates.description,
+          deadline: updates.deadline
+        }
+      : project
+  ));
+
+  saveProjects();
+  renderDashboard();
+  renderProjects();
+  setFeedback("Projeto atualizado com sucesso.");
+}
+
 function renderMembers() {
   membersList.innerHTML = "";
 
@@ -291,12 +310,19 @@ function renderProjects() {
     const deadlineTag = cardFragment.querySelector(".project-deadline-tag");
     const progressTag = cardFragment.querySelector(".project-progress-tag");
     const deleteButton = cardFragment.querySelector(".project-delete-button");
+    const editButton = cardFragment.querySelector(".project-edit-button");
     const activityCounter = cardFragment.querySelector(".activities__counter");
     const activityForm = cardFragment.querySelector(".activity-form");
     const projectIdField = cardFragment.querySelector('input[name="projectId"]');
     const responsibleSelect = cardFragment.querySelector('select[name="responsible"]');
     const activityList = cardFragment.querySelector(".activity-list");
     const activityEmptyState = cardFragment.querySelector(".activities-empty-state");
+    const editForm = cardFragment.querySelector(".project-edit-form");
+    const editFormId = cardFragment.querySelector('.project-edit-form input[name="projectId"]');
+    const editName = cardFragment.querySelector('.project-edit-form input[name="name"]');
+    const editDeadline = cardFragment.querySelector('.project-edit-form input[name="deadline"]');
+    const editDescription = cardFragment.querySelector('.project-edit-form textarea[name="description"]');
+    const editCancel = cardFragment.querySelector(".project-edit-cancel");
     const progress = calculateProjectProgress(project);
 
     title.textContent = project.name;
@@ -320,11 +346,29 @@ function renderProjects() {
     activityCounter.textContent = `${project.activities.length} item(ns)`;
     projectIdField.value = project.id;
     createResponsibleOptions(responsibleSelect);
+    editFormId.value = project.id;
+    editName.value = project.name;
+    editDeadline.value = project.deadline || "";
+    editDescription.value = project.description || "";
+    editForm.hidden = editingProjectId !== project.id;
 
     deleteButton.setAttribute("aria-label", `Excluir projeto ${project.name}`);
     deleteButton.addEventListener("click", () => {
       deleteProject(project.id);
     });
+
+    editButton.setAttribute("aria-label", `Editar projeto ${project.name}`);
+    editButton.addEventListener("click", () => {
+      editingProjectId = editingProjectId === project.id ? null : project.id;
+      renderProjects();
+    });
+
+    editCancel.addEventListener("click", () => {
+      editingProjectId = null;
+      renderProjects();
+    });
+
+    editForm.addEventListener("submit", handleProjectEditSubmit);
 
     activityForm.addEventListener("submit", handleActivitySubmit);
 
@@ -384,6 +428,10 @@ function renderProjects() {
 }
 
 function deleteProject(projectId) {
+  if (editingProjectId === projectId) {
+    editingProjectId = null;
+  }
+
   projects = projects.filter((project) => project.id !== projectId);
   saveProjects();
   renderDashboard();
@@ -516,6 +564,25 @@ function handleActivitySubmit(event) {
 
   addActivity(projectId, { title, responsible });
   setFeedback("Atividade adicionada com sucesso.");
+}
+
+function handleProjectEditSubmit(event) {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  const projectId = String(formData.get("projectId") || "");
+  const name = String(formData.get("name") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const deadline = String(formData.get("deadline") || "").trim();
+
+  if (!name) {
+    setFeedback("Informe o nome do projeto.", true);
+    return;
+  }
+
+  editingProjectId = null;
+  updateProject(projectId, { name, description, deadline });
 }
 
 memberForm.addEventListener("submit", handleMemberSubmit);

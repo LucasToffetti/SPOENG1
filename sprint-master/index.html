@@ -185,6 +185,12 @@
         </div>
         <div class="project-card__actions">
           <span class="project-card__status"></span>
+          <button type="button" class="icon-button project-edit-button" aria-label="Editar projeto">
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+              <path d="M4 20h4l10-10-4-4L4 16z"/>
+              <path d="M13 7l4 4"/>
+            </svg>
+          </button>
           <button type="button" class="icon-button project-delete-button" aria-label="Excluir projeto">
             <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
               <path d="M4 7h16"/>
@@ -200,6 +206,31 @@
         <span class="project-tag project-deadline-tag"></span>
         <span class="project-tag project-progress-tag"></span>
       </div>
+
+      <form class="project-edit-form" hidden>
+        <input type="hidden" name="projectId">
+        <div class="project-edit-form__grid">
+          <label class="field">
+            <span class="field__label">Nome</span>
+            <input type="text" name="name" maxlength="80" required>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Prazo</span>
+            <input type="date" name="deadline">
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="field__label">Descrição</span>
+          <textarea name="description" rows="3" maxlength="240"></textarea>
+        </label>
+
+        <div class="project-edit-form__actions">
+          <button type="submit" class="button button--secondary">Salvar alterações</button>
+          <button type="button" class="button button--ghost project-edit-cancel">Cancelar</button>
+        </div>
+      </form>
 
       <section class="activities" aria-label="Atividades do projeto">
         <div class="activities__head">
