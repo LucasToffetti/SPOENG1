@@ -118,7 +118,7 @@ function renderProjects() {
 
     const status = document.createElement("span");
     status.className = "project-card__status";
-    status.textContent = "Atividades: 0";
+    status.textContent = "0%";
 
     header.append(titleGroup, status);
 
