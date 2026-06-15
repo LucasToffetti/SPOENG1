@@ -16,6 +16,11 @@ Acesse o trabalho na pasta:
 
 [sprint-master](./sprint-master)
 
+## Acesso rápido
+
+- Repositório: <https://github.com/fabio-ara/SPOENG1>
+- GitHub Pages: <https://fabio-ara.github.io/SPOENG1/>
+
 ## Artefatos principais
 
 - [README do Sprint Master](./sprint-master/README.md)

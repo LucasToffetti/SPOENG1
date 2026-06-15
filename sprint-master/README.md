@@ -16,6 +16,10 @@ O Sprint Master é um MVP web para organizar projetos de pesquisa em uma interfa
 
 Abra o arquivo `index.html` no navegador.
 
+## Acesso publicado
+
+- GitHub Pages: <https://fabio-ara.github.io/SPOENG1/>
+
 ## Fluxo de uso
 
 1. Abrir o painel de responsáveis no topo e conferir a lista inicial.
@@ -91,6 +95,7 @@ O aplicativo salva os dados em uma estrutura compacta:
 - Executar o checklist de `TESTES.md` e registrar ambiente, data e resultados.
 - Validar se `SPRINT_BACKLOG.md`, `REVIEW.md` e `RETROSPECTIVE.md` continuam coerentes com o sistema atual.
 - Registrar qualquer divergência encontrada primeiro na documentação, antes de propor novas funcionalidades.
+- Usar o projeto inicial em seed como roteiro meta das tarefas já implantadas e do que ainda precisa validar.
 
 ## Documentação Scrum
 

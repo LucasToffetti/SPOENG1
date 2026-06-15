@@ -2,6 +2,51 @@ const APP_STORAGE_KEY = "sprint-master-state";
 const LEGACY_PROJECTS_STORAGE_KEY = "sprint-master-projects";
 const LEGACY_MEMBERS_STORAGE_KEY = "sprint-master-members";
 const DEFAULT_MEMBERS = ["Fabio Ara", "Lucas Toffetti", "Osvaldo Matteos"];
+const DEFAULT_PROJECT_SEED = {
+  id: "seed-sprint-master",
+  nome: "Sprint Master",
+  desc: "Projeto-meta do próprio trabalho, usado como exemplo inicial do sistema.",
+  prazo: "2026-06-20",
+  criado: "2026-06-15T12:00:00.000Z",
+  ats: [
+    {
+      id: "seed-atividade-1",
+      tit: "Estruturar repositório e documentação inicial",
+      resp: "Fabio Ara",
+      st: "concluído"
+    },
+    {
+      id: "seed-atividade-2",
+      tit: "Implementar projetos, atividades e progresso",
+      resp: "Fabio Ara",
+      st: "concluído"
+    },
+    {
+      id: "seed-atividade-3",
+      tit: "Mover formulários para overlays",
+      resp: "Fabio Ara",
+      st: "concluído"
+    },
+    {
+      id: "seed-atividade-4",
+      tit: "Adicionar importação e exportação em JSON",
+      resp: "Fabio Ara",
+      st: "concluído"
+    },
+    {
+      id: "seed-atividade-5",
+      tit: "Executar checklist manual em TESTES.md",
+      resp: "Lucas Toffetti",
+      st: "a fazer"
+    },
+    {
+      id: "seed-atividade-6",
+      tit: "Revisar backlog, review e retrospective",
+      resp: "Lucas Toffetti",
+      st: "em andamento"
+    }
+  ]
+};
 const STATUS_OPTIONS = [
   { value: "a fazer", label: "A fazer" },
   { value: "em andamento", label: "Em andamento" },
@@ -75,16 +120,18 @@ function migrateLegacyState() {
     const rawProjects = localStorage.getItem(LEGACY_PROJECTS_STORAGE_KEY);
     const legacyMembers = rawMembers ? JSON.parse(rawMembers) : DEFAULT_MEMBERS;
     const legacyProjects = rawProjects ? JSON.parse(rawProjects) : [];
+    const normalizedMembers = normalizeMembers(legacyMembers);
+    const normalizedProjects = normalizeProjects(legacyProjects);
 
     return {
-      members: normalizeMembers(legacyMembers),
-      projects: normalizeProjects(legacyProjects)
+      members: normalizedMembers,
+      projects: normalizedProjects.length > 0 ? normalizedProjects : createSeedProjects()
     };
   } catch (error) {
     console.error("Erro ao migrar o estado legado:", error);
     return {
       members: [...DEFAULT_MEMBERS],
-      projects: []
+      projects: createSeedProjects()
     };
   }
 }
@@ -222,6 +269,10 @@ function serializeProject(project) {
       st: activity.status
     }))
   };
+}
+
+function createSeedProjects() {
+  return normalizeProjects([DEFAULT_PROJECT_SEED]);
 }
 
 function serializeScope(scope) {
