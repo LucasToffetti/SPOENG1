@@ -12,6 +12,8 @@ const LEGACY_STATUS_MAP = {
 };
 
 const projectForm = document.querySelector("#project-form");
+const projectFormTitle = document.querySelector("#project-form-title");
+const projectFormCancelButton = document.querySelector("#project-form-cancel");
 const memberForm = document.querySelector("#member-form");
 const projectsList = document.querySelector("#projects-list");
 const emptyState = document.querySelector("#projects-empty-state");
@@ -121,6 +123,25 @@ function setFeedback(message, isError = false) {
   feedback.classList.toggle("form-feedback--error", isError);
 }
 
+function resetProjectForm() {
+  projectForm.reset();
+  projectForm.elements.projectId.value = "";
+  editingProjectId = null;
+  projectFormTitle.textContent = "Novo projeto";
+  projectFormCancelButton.hidden = true;
+}
+
+function startProjectEdit(project) {
+  editingProjectId = project.id;
+  projectForm.elements.projectId.value = project.id;
+  projectForm.elements.name.value = project.name;
+  projectForm.elements.description.value = project.description || "";
+  projectForm.elements.deadline.value = project.deadline || "";
+  projectFormTitle.textContent = "Editar projeto";
+  projectFormCancelButton.hidden = false;
+  projectForm.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function calculateProjectProgress(project) {
   const total = project.activities.length;
 
@@ -184,6 +205,7 @@ function updateProject(projectId, updates) {
   saveProjects();
   renderDashboard();
   renderProjects();
+  resetProjectForm();
   setFeedback("Projeto atualizado com sucesso.");
 }
 
@@ -317,12 +339,6 @@ function renderProjects() {
     const responsibleSelect = cardFragment.querySelector('select[name="responsible"]');
     const activityList = cardFragment.querySelector(".activity-list");
     const activityEmptyState = cardFragment.querySelector(".activities-empty-state");
-    const editForm = cardFragment.querySelector(".project-edit-form");
-    const editFormId = cardFragment.querySelector('.project-edit-form input[name="projectId"]');
-    const editName = cardFragment.querySelector('.project-edit-form input[name="name"]');
-    const editDeadline = cardFragment.querySelector('.project-edit-form input[name="deadline"]');
-    const editDescription = cardFragment.querySelector('.project-edit-form textarea[name="description"]');
-    const editCancel = cardFragment.querySelector(".project-edit-cancel");
     const progress = calculateProjectProgress(project);
 
     title.textContent = project.name;
@@ -346,11 +362,6 @@ function renderProjects() {
     activityCounter.textContent = `${project.activities.length} item(ns)`;
     projectIdField.value = project.id;
     createResponsibleOptions(responsibleSelect);
-    editFormId.value = project.id;
-    editName.value = project.name;
-    editDeadline.value = project.deadline || "";
-    editDescription.value = project.description || "";
-    editForm.hidden = editingProjectId !== project.id;
 
     deleteButton.setAttribute("aria-label", `Excluir projeto ${project.name}`);
     deleteButton.addEventListener("click", () => {
@@ -359,16 +370,8 @@ function renderProjects() {
 
     editButton.setAttribute("aria-label", `Editar projeto ${project.name}`);
     editButton.addEventListener("click", () => {
-      editingProjectId = editingProjectId === project.id ? null : project.id;
-      renderProjects();
+      startProjectEdit(project);
     });
-
-    editCancel.addEventListener("click", () => {
-      editingProjectId = null;
-      renderProjects();
-    });
-
-    editForm.addEventListener("submit", handleProjectEditSubmit);
 
     activityForm.addEventListener("submit", handleActivitySubmit);
 
@@ -429,7 +432,7 @@ function renderProjects() {
 
 function deleteProject(projectId) {
   if (editingProjectId === projectId) {
-    editingProjectId = null;
+    resetProjectForm();
   }
 
   projects = projects.filter((project) => project.id !== projectId);
@@ -530,6 +533,7 @@ function handleProjectSubmit(event) {
   event.preventDefault();
 
   const formData = new FormData(projectForm);
+  const projectId = String(formData.get("projectId") || "").trim();
   const name = String(formData.get("name") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const deadline = String(formData.get("deadline") || "").trim();
@@ -539,12 +543,17 @@ function handleProjectSubmit(event) {
     return;
   }
 
+  if (projectId) {
+    updateProject(projectId, { name, description, deadline });
+    return;
+  }
+
   const newProject = createProject({ name, description, deadline });
   projects.push(newProject);
   saveProjects();
   renderDashboard();
   renderProjects();
-  projectForm.reset();
+  resetProjectForm();
   setFeedback("Projeto salvo com sucesso.");
 }
 
@@ -566,27 +575,12 @@ function handleActivitySubmit(event) {
   setFeedback("Atividade adicionada com sucesso.");
 }
 
-function handleProjectEditSubmit(event) {
-  event.preventDefault();
-
-  const form = event.currentTarget;
-  const formData = new FormData(form);
-  const projectId = String(formData.get("projectId") || "");
-  const name = String(formData.get("name") || "").trim();
-  const description = String(formData.get("description") || "").trim();
-  const deadline = String(formData.get("deadline") || "").trim();
-
-  if (!name) {
-    setFeedback("Informe o nome do projeto.", true);
-    return;
-  }
-
-  editingProjectId = null;
-  updateProject(projectId, { name, description, deadline });
-}
-
 memberForm.addEventListener("submit", handleMemberSubmit);
 projectForm.addEventListener("submit", handleProjectSubmit);
+projectFormCancelButton.addEventListener("click", () => {
+  resetProjectForm();
+  setFeedback("");
+});
 
 renderDashboard();
 renderMembers();

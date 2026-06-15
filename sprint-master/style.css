@@ -175,6 +175,13 @@ h2 {
   gap: 12px;
 }
 
+.project-form__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .member-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 38px;
@@ -399,30 +406,6 @@ h2 {
   margin-top: 10px;
 }
 
-.project-edit-form {
-  display: grid;
-  gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
-.project-edit-form[hidden] {
-  display: none;
-}
-
-.project-edit-form__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 180px;
-  gap: 10px;
-}
-
-.project-edit-form__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .project-tag {
   display: inline-flex;
   align-items: center;
@@ -628,7 +611,6 @@ h2 {
   }
 
   .activity-form__grid,
-  .project-edit-form__grid,
   .activity-item__head,
   .activity-item__controls {
     grid-template-columns: 1fr;

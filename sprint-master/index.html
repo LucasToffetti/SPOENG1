@@ -111,6 +111,7 @@
       </div>
 
       <form id="project-form" class="project-form">
+        <input type="hidden" name="projectId">
         <label class="field field--icon">
           <span class="field__label sr-only">Nome do projeto</span>
           <span class="field__icon" aria-hidden="true">
@@ -143,11 +144,14 @@
           <input type="date" name="deadline" aria-label="Prazo do projeto">
         </label>
 
-        <button type="submit" class="button button--icon button--icon-right" aria-label="Salvar projeto" title="Salvar projeto">
-          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-        </button>
+        <div class="project-form__actions">
+          <button type="submit" class="button button--icon button--icon-right" aria-label="Salvar projeto" title="Salvar projeto">
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+          </button>
+          <button type="button" id="project-form-cancel" class="button button--ghost" hidden>Cancelar edição</button>
+        </div>
         <p id="form-feedback" class="form-feedback" aria-live="polite"></p>
       </form>
     </section>
@@ -206,31 +210,6 @@
         <span class="project-tag project-deadline-tag"></span>
         <span class="project-tag project-progress-tag"></span>
       </div>
-
-      <form class="project-edit-form" hidden>
-        <input type="hidden" name="projectId">
-        <div class="project-edit-form__grid">
-          <label class="field">
-            <span class="field__label">Nome</span>
-            <input type="text" name="name" maxlength="80" required>
-          </label>
-
-          <label class="field">
-            <span class="field__label">Prazo</span>
-            <input type="date" name="deadline">
-          </label>
-        </div>
-
-        <label class="field">
-          <span class="field__label">Descrição</span>
-          <textarea name="description" rows="3" maxlength="240"></textarea>
-        </label>
-
-        <div class="project-edit-form__actions">
-          <button type="submit" class="button button--secondary">Salvar alterações</button>
-          <button type="button" class="button button--ghost project-edit-cancel">Cancelar</button>
-        </div>
-      </form>
 
       <section class="activities" aria-label="Atividades do projeto">
         <div class="activities__head">
