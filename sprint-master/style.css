@@ -228,6 +228,7 @@ h2 {
   outline: none;
   border-color: var(--accent);
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(29, 107, 46, 0.14);
 }
 
 .field textarea {
@@ -372,6 +373,12 @@ h2 {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.project-card--editing {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(29, 107, 46, 0.12);
 }
 
 .project-card__header {
@@ -549,6 +556,13 @@ h2 {
   background-repeat: no-repeat;
 }
 
+.activity-status:focus,
+.icon-button:focus-visible,
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(29, 107, 46, 0.14);
+}
+
 .activity-responsible-select {
   height: 42px;
   padding: 10px 32px 10px 12px;
@@ -567,6 +581,11 @@ h2 {
     calc(100% - 9px) 18px;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
+}
+
+.activity-form .button--icon-right {
+  justify-self: start;
+  margin-left: 28px;
 }
 
 .icon-button {
@@ -632,5 +651,9 @@ h2 {
 
   .button--icon-right {
     justify-self: start;
+  }
+
+  .activity-form .button--icon-right {
+    margin-left: 0;
   }
 }

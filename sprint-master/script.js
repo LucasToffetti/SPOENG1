@@ -139,7 +139,6 @@ function startProjectEdit(project) {
   projectForm.elements.deadline.value = project.deadline || "";
   projectFormTitle.textContent = "Editar projeto";
   projectFormCancelButton.hidden = false;
-  projectForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function calculateProjectProgress(project) {
@@ -340,6 +339,12 @@ function renderProjects() {
     const activityList = cardFragment.querySelector(".activity-list");
     const activityEmptyState = cardFragment.querySelector(".activities-empty-state");
     const progress = calculateProjectProgress(project);
+    const isEditing = editingProjectId === project.id;
+
+    if (isEditing) {
+      const projectCard = cardFragment.querySelector(".project-card");
+      projectCard.classList.add("project-card--editing");
+    }
 
     title.textContent = project.name;
     description.textContent = project.description || "";
@@ -371,6 +376,8 @@ function renderProjects() {
     editButton.setAttribute("aria-label", `Editar projeto ${project.name}`);
     editButton.addEventListener("click", () => {
       startProjectEdit(project);
+      renderProjects();
+      projectForm.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
 
     activityForm.addEventListener("submit", handleActivitySubmit);
