@@ -21,10 +21,11 @@ Abra o arquivo `index.html` no navegador.
 
 ## Funcionalidades atuais
 
-- Cadastro e exclusão de projetos.
+- Cadastro, edição e exclusão de projetos.
+- Cadastro e exclusão de responsáveis com persistência local.
 - Cadastro e exclusão de atividades por projeto.
 - Definição de responsável por atividade.
-- Alteração de status: `a fazer`, `andando` e `concluido`.
+- Alteração de status: `A fazer`, `Em andamento` e `Concluído`.
 - Cálculo de progresso por projeto e visão geral da sprint.
 - Persistência local com `localStorage`.
 

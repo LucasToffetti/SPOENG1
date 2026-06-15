@@ -1,5 +1,20 @@
 const STORAGE_KEY = "sprint-master-projects";
+const MEMBERS_STORAGE_KEY = "sprint-master-members";
+const DEFAULT_MEMBERS = ["Fabio Ara", "Lucas Toffetti", "Osvaldo Matteos"];
+const STATUS_OPTIONS = [
+  { value: "a fazer", label: "A fazer" },
+  { value: "em andamento", label: "Em andamento" },
+  { value: "concluído", label: "Concluído" }
+];
+const LEGACY_STATUS_MAP = {
+  andando: "em andamento",
+  concluido: "concluído"
+};
+
 const projectForm = document.querySelector("#project-form");
+const projectFormTitle = document.querySelector("#project-form-title");
+const projectFormCancelButton = document.querySelector("#project-form-cancel");
+const memberForm = document.querySelector("#member-form");
 const projectsList = document.querySelector("#projects-list");
 const emptyState = document.querySelector("#projects-empty-state");
 const feedback = document.querySelector("#form-feedback");
@@ -7,13 +22,35 @@ const totalProjects = document.querySelector("#total-projects");
 const totalActivities = document.querySelector("#total-activities");
 const completedActivities = document.querySelector("#completed-activities");
 const overallProgress = document.querySelector("#overall-progress");
+const membersList = document.querySelector("#members-list");
+const membersEmptyState = document.querySelector("#members-empty-state");
 const projectCardTemplate = document.querySelector("#project-card-template");
-const VALID_STATUSES = ["a fazer", "andando", "concluído"];
-const LEGACY_STATUS_MAP = {
-  concluido: "concluído"
-};
 
+let members = loadMembers();
 let projects = loadProjects();
+let editingProjectId = null;
+
+function loadMembers() {
+  try {
+    const rawMembers = localStorage.getItem(MEMBERS_STORAGE_KEY);
+
+    if (!rawMembers) {
+      return [...DEFAULT_MEMBERS];
+    }
+
+    const parsedMembers = JSON.parse(rawMembers);
+    return Array.isArray(parsedMembers) && parsedMembers.length > 0
+      ? parsedMembers.map((member) => String(member || "").trim()).filter(Boolean)
+      : [...DEFAULT_MEMBERS];
+  } catch (error) {
+    console.error("Erro ao carregar responsáveis:", error);
+    return [...DEFAULT_MEMBERS];
+  }
+}
+
+function saveMembers() {
+  localStorage.setItem(MEMBERS_STORAGE_KEY, JSON.stringify(members));
+}
 
 function loadProjects() {
   try {
@@ -48,16 +85,8 @@ function saveProjects() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
 }
 
-function deleteProject(projectId) {
-  projects = projects.filter((project) => project.id !== projectId);
-  saveProjects();
-  renderDashboard();
-  renderProjects();
-  setFeedback("Projeto excluído.");
-}
-
 function generateId() {
-  return `project-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+  return `item-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
 function createProject({ name, description, deadline }) {
@@ -71,15 +100,6 @@ function createProject({ name, description, deadline }) {
   };
 }
 
-function formatDate(dateValue) {
-  if (!dateValue) {
-    return "Sem prazo definido";
-  }
-
-  const [year, month, day] = dateValue.split("-");
-  return `${day}/${month}/${year}`;
-}
-
 function createActivity({ title, responsible }) {
   return {
     id: generateId(),
@@ -89,65 +109,37 @@ function createActivity({ title, responsible }) {
   };
 }
 
-function updateActivityStatus(projectId, activityId, newStatus) {
-  if (!VALID_STATUSES.includes(newStatus)) {
-    return;
+function formatDate(dateValue) {
+  if (!dateValue) {
+    return "Sem prazo";
   }
 
-  projects = projects.map((project) => {
-    if (project.id !== projectId) {
-      return project;
-    }
-
-    return {
-      ...project,
-      activities: project.activities.map((activity) => (
-        activity.id === activityId
-          ? { ...activity, status: newStatus }
-          : activity
-      ))
-    };
-  });
-
-  saveProjects();
-  renderDashboard();
-  renderProjects();
+  const [year, month, day] = dateValue.split("-");
+  return `${day}/${month}/${year}`;
 }
 
-function deleteActivity(projectId, activityId) {
-  projects = projects.map((project) => {
-    if (project.id !== projectId) {
-      return project;
-    }
-
-    return {
-      ...project,
-      activities: project.activities.filter((activity) => activity.id !== activityId)
-    };
-  });
-
-  saveProjects();
-  renderDashboard();
-  renderProjects();
+function setFeedback(message, isError = false) {
+  feedback.textContent = message;
+  feedback.classList.toggle("form-feedback--error", isError);
 }
 
-function addActivity(projectId, { title, responsible }) {
-  const activity = createActivity({ title, responsible });
+function resetProjectForm() {
+  projectForm.reset();
+  projectForm.elements.projectId.value = "";
+  editingProjectId = null;
+  projectFormTitle.textContent = "Novo projeto";
+  projectFormCancelButton.hidden = true;
+}
 
-  projects = projects.map((project) => {
-    if (project.id !== projectId) {
-      return project;
-    }
-
-    return {
-      ...project,
-      activities: [...project.activities, activity]
-    };
-  });
-
-  saveProjects();
-  renderDashboard();
-  renderProjects();
+function startProjectEdit(project) {
+  editingProjectId = project.id;
+  projectForm.elements.projectId.value = project.id;
+  projectForm.elements.name.value = project.name;
+  projectForm.elements.description.value = project.description || "";
+  projectForm.elements.deadline.value = project.deadline || "";
+  projectFormTitle.textContent = "Editar projeto";
+  projectFormCancelButton.hidden = false;
+  projectForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function calculateProjectProgress(project) {
@@ -177,11 +169,113 @@ function calculateTotals() {
 
 function renderDashboard() {
   const totals = calculateTotals();
-
   totalProjects.textContent = String(projects.length);
   totalActivities.textContent = String(totals.activityCount);
   completedActivities.textContent = String(totals.completedCount);
   overallProgress.textContent = `${totals.overallPercent}%`;
+}
+
+function memberIsInUse(memberName) {
+  return projects.some((project) => project.activities.some((activity) => activity.responsible === memberName));
+}
+
+function createTrashIcon() {
+  return `
+    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+      <path d="M4 7h16"/>
+      <path d="M10 11v6M14 11v6"/>
+      <path d="M9 4h6l1 3H8z"/>
+      <path d="M6 7l1 12h10l1-12"/>
+    </svg>
+  `;
+}
+
+function updateProject(projectId, updates) {
+  projects = projects.map((project) => (
+    project.id === projectId
+      ? {
+          ...project,
+          name: updates.name,
+          description: updates.description,
+          deadline: updates.deadline
+        }
+      : project
+  ));
+
+  saveProjects();
+  renderDashboard();
+  renderProjects();
+  resetProjectForm();
+  setFeedback("Projeto atualizado com sucesso.");
+}
+
+function renderMembers() {
+  membersList.innerHTML = "";
+
+  if (members.length === 0) {
+    membersEmptyState.hidden = false;
+    return;
+  }
+
+  membersEmptyState.hidden = true;
+
+  members.forEach((member) => {
+    const item = document.createElement("li");
+    item.className = "member-chip";
+
+    item.innerHTML = `
+      <span class="member-chip__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <circle cx="12" cy="8" r="3.5"/>
+          <path d="M5 19a7 7 0 0 1 14 0"/>
+        </svg>
+      </span>
+      <span class="member-chip__name">${member}</span>
+    `;
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "icon-button";
+    deleteButton.setAttribute("aria-label", `Excluir responsável ${member}`);
+    deleteButton.title = "Excluir responsável";
+    deleteButton.innerHTML = createTrashIcon();
+    deleteButton.disabled = memberIsInUse(member);
+
+    deleteButton.addEventListener("click", () => {
+      if (memberIsInUse(member)) {
+        setFeedback("Não é possível excluir um responsável já usado em atividade.", true);
+        return;
+      }
+
+      members = members.filter((currentMember) => currentMember !== member);
+      saveMembers();
+      renderMembers();
+      renderProjects();
+      setFeedback("Responsável excluído.");
+    });
+
+    item.append(deleteButton);
+    membersList.append(item);
+  });
+}
+
+function createResponsibleOptions(select, selectedValue = "") {
+  select.innerHTML = "";
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Responsável";
+  placeholder.disabled = true;
+  placeholder.selected = !selectedValue;
+  select.append(placeholder);
+
+  members.forEach((member) => {
+    const option = document.createElement("option");
+    option.value = member;
+    option.textContent = member;
+    option.selected = member === selectedValue;
+    select.append(option);
+  });
 }
 
 function createStatusSelect(projectId, activity) {
@@ -189,11 +283,11 @@ function createStatusSelect(projectId, activity) {
   select.className = "activity-status";
   select.setAttribute("aria-label", `Status da atividade ${activity.title}`);
 
-  VALID_STATUSES.forEach((status) => {
+  STATUS_OPTIONS.forEach((status) => {
     const option = document.createElement("option");
-    option.value = status;
-    option.textContent = status;
-    option.selected = activity.status === status;
+    option.value = status.value;
+    option.textContent = status.label;
+    option.selected = activity.status === status.value;
     select.append(option);
   });
 
@@ -232,16 +326,17 @@ function renderProjects() {
 
   sortedProjects.forEach((project) => {
     const cardFragment = projectCardTemplate.content.cloneNode(true);
-    const card = cardFragment.querySelector(".project-card");
     const title = cardFragment.querySelector(".project-card__title");
     const description = cardFragment.querySelector(".project-card__description");
     const status = cardFragment.querySelector(".project-card__status");
     const deadlineTag = cardFragment.querySelector(".project-deadline-tag");
     const progressTag = cardFragment.querySelector(".project-progress-tag");
     const deleteButton = cardFragment.querySelector(".project-delete-button");
+    const editButton = cardFragment.querySelector(".project-edit-button");
     const activityCounter = cardFragment.querySelector(".activities__counter");
     const activityForm = cardFragment.querySelector(".activity-form");
     const projectIdField = cardFragment.querySelector('input[name="projectId"]');
+    const responsibleSelect = cardFragment.querySelector('select[name="responsible"]');
     const activityList = cardFragment.querySelector(".activity-list");
     const activityEmptyState = cardFragment.querySelector(".activities-empty-state");
     const progress = calculateProjectProgress(project);
@@ -266,10 +361,16 @@ function renderProjects() {
     `;
     activityCounter.textContent = `${project.activities.length} item(ns)`;
     projectIdField.value = project.id;
+    createResponsibleOptions(responsibleSelect);
 
     deleteButton.setAttribute("aria-label", `Excluir projeto ${project.name}`);
     deleteButton.addEventListener("click", () => {
       deleteProject(project.id);
+    });
+
+    editButton.setAttribute("aria-label", `Editar projeto ${project.name}`);
+    editButton.addEventListener("click", () => {
+      startProjectEdit(project);
     });
 
     activityForm.addEventListener("submit", handleActivitySubmit);
@@ -312,14 +413,8 @@ function renderProjects() {
         deleteActivityButton.type = "button";
         deleteActivityButton.className = "icon-button";
         deleteActivityButton.setAttribute("aria-label", `Excluir atividade ${activity.title}`);
-        deleteActivityButton.innerHTML = `
-          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-            <path d="M4 7h16"/>
-            <path d="M10 11v6M14 11v6"/>
-            <path d="M9 4h6l1 3H8z"/>
-            <path d="M6 7l1 12h10l1-12"/>
-          </svg>
-        `;
+        deleteActivityButton.title = "Excluir atividade";
+        deleteActivityButton.innerHTML = createTrashIcon();
         deleteActivityButton.addEventListener("click", () => {
           deleteActivity(project.id, activity.id);
         });
@@ -331,19 +426,114 @@ function renderProjects() {
       });
     }
 
-    projectsList.append(card);
+    projectsList.append(cardFragment);
   });
 }
 
-function setFeedback(message, isError = false) {
-  feedback.textContent = message;
-  feedback.classList.toggle("form-feedback--error", isError);
+function deleteProject(projectId) {
+  if (editingProjectId === projectId) {
+    resetProjectForm();
+  }
+
+  projects = projects.filter((project) => project.id !== projectId);
+  saveProjects();
+  renderDashboard();
+  renderMembers();
+  renderProjects();
+  setFeedback("Projeto excluído.");
+}
+
+function addActivity(projectId, { title, responsible }) {
+  const activity = createActivity({ title, responsible });
+
+  projects = projects.map((project) => {
+    if (project.id !== projectId) {
+      return project;
+    }
+
+    return {
+      ...project,
+      activities: [...project.activities, activity]
+    };
+  });
+
+  saveProjects();
+  renderDashboard();
+  renderMembers();
+  renderProjects();
+}
+
+function updateActivityStatus(projectId, activityId, newStatus) {
+  const normalizedStatus = LEGACY_STATUS_MAP[newStatus] || newStatus;
+
+  projects = projects.map((project) => {
+    if (project.id !== projectId) {
+      return project;
+    }
+
+    return {
+      ...project,
+      activities: project.activities.map((activity) => (
+        activity.id === activityId
+          ? { ...activity, status: normalizedStatus }
+          : activity
+      ))
+    };
+  });
+
+  saveProjects();
+  renderDashboard();
+  renderProjects();
+}
+
+function deleteActivity(projectId, activityId) {
+  projects = projects.map((project) => {
+    if (project.id !== projectId) {
+      return project;
+    }
+
+    return {
+      ...project,
+      activities: project.activities.filter((activity) => activity.id !== activityId)
+    };
+  });
+
+  saveProjects();
+  renderDashboard();
+  renderMembers();
+  renderProjects();
+  setFeedback("Atividade excluída.");
+}
+
+function handleMemberSubmit(event) {
+  event.preventDefault();
+
+  const formData = new FormData(memberForm);
+  const memberName = String(formData.get("memberName") || "").trim();
+
+  if (!memberName) {
+    setFeedback("Informe o nome do responsável.", true);
+    return;
+  }
+
+  if (members.some((member) => member.localeCompare(memberName, "pt-BR", { sensitivity: "base" }) === 0)) {
+    setFeedback("Esse responsável já existe.", true);
+    return;
+  }
+
+  members.push(memberName);
+  saveMembers();
+  renderMembers();
+  renderProjects();
+  memberForm.reset();
+  setFeedback("Responsável adicionado com sucesso.");
 }
 
 function handleProjectSubmit(event) {
   event.preventDefault();
 
   const formData = new FormData(projectForm);
+  const projectId = String(formData.get("projectId") || "").trim();
   const name = String(formData.get("name") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const deadline = String(formData.get("deadline") || "").trim();
@@ -353,12 +543,17 @@ function handleProjectSubmit(event) {
     return;
   }
 
+  if (projectId) {
+    updateProject(projectId, { name, description, deadline });
+    return;
+  }
+
   const newProject = createProject({ name, description, deadline });
   projects.push(newProject);
   saveProjects();
   renderDashboard();
   renderProjects();
-  projectForm.reset();
+  resetProjectForm();
   setFeedback("Projeto salvo com sucesso.");
 }
 
@@ -380,7 +575,13 @@ function handleActivitySubmit(event) {
   setFeedback("Atividade adicionada com sucesso.");
 }
 
+memberForm.addEventListener("submit", handleMemberSubmit);
 projectForm.addEventListener("submit", handleProjectSubmit);
+projectFormCancelButton.addEventListener("click", () => {
+  resetProjectForm();
+  setFeedback("");
+});
 
 renderDashboard();
+renderMembers();
 renderProjects();
