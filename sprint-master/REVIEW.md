@@ -1,0 +1,60 @@
+# Sprint Review
+
+## Data
+
+20/06/2026
+
+## Participantes
+
+- Fabio Ara
+- Lucas Toffetti
+
+## Integrante nominal
+
+- Osvaldo Matteos
+
+## Objetivo da sprint
+
+Entregar um MVP web para cadastro de projetos de pesquisa, atividades e acompanhamento de progresso.
+
+## Funcionalidades demonstradas
+
+- Cadastro de projetos.
+- Listagem de projetos.
+- Cadastro de atividades por projeto.
+- Alteração de status das atividades.
+- Cálculo de porcentagem concluída.
+- Dashboard simples.
+
+## Histórias avaliadas
+
+### História 1 — Cadastro de projeto
+
+Status: aceita.
+
+Justificativa: o sistema permite cadastrar projeto com nome, descrição e prazo.
+
+### História 2 — Atividades
+
+Status: aceita.
+
+Justificativa: o sistema permite adicionar atividades com título, responsável e status.
+
+### História 3 — Dashboard
+
+Status: aceita com simplificação.
+
+Justificativa: o sistema mostra porcentagem concluída por projeto e resumo geral, sem gráficos avançados.
+
+## O que não foi feito
+
+- Login.
+- Backend.
+- Banco de dados real.
+- Controle de permissões.
+- Edição avançada.
+- Deploy.
+
+## Feedback
+
+O MVP atende ao fluxo principal. Em uma próxima sprint, poderia evoluir com edição de atividades, exclusão com confirmação e banco de dados real.
