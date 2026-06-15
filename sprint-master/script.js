@@ -12,6 +12,7 @@ const LEGACY_STATUS_MAP = {
 };
 
 const projectForm = document.querySelector("#project-form");
+const projectFormPanel = document.querySelector(".panel--form");
 const projectFormTitle = document.querySelector("#project-form-title");
 const projectFormCancelButton = document.querySelector("#project-form-cancel");
 const memberForm = document.querySelector("#member-form");
@@ -129,6 +130,7 @@ function resetProjectForm() {
   editingProjectId = null;
   projectFormTitle.textContent = "Novo projeto";
   projectFormCancelButton.hidden = true;
+  projectFormPanel.classList.remove("panel--editing");
 }
 
 function startProjectEdit(project) {
@@ -139,6 +141,7 @@ function startProjectEdit(project) {
   projectForm.elements.deadline.value = project.deadline || "";
   projectFormTitle.textContent = "Editar projeto";
   projectFormCancelButton.hidden = false;
+  projectFormPanel.classList.add("panel--editing");
 }
 
 function calculateProjectProgress(project) {
@@ -339,12 +342,6 @@ function renderProjects() {
     const activityList = cardFragment.querySelector(".activity-list");
     const activityEmptyState = cardFragment.querySelector(".activities-empty-state");
     const progress = calculateProjectProgress(project);
-    const isEditing = editingProjectId === project.id;
-
-    if (isEditing) {
-      const projectCard = cardFragment.querySelector(".project-card");
-      projectCard.classList.add("project-card--editing");
-    }
 
     title.textContent = project.name;
     description.textContent = project.description || "";

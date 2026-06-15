@@ -98,6 +98,15 @@ h2 {
   padding: 14px 16px;
 }
 
+.panel--form {
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.panel--form.panel--editing {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(29, 107, 46, 0.12);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -373,12 +382,6 @@ h2 {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-.project-card--editing {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(29, 107, 46, 0.12);
 }
 
 .project-card__header {
@@ -471,13 +474,10 @@ h2 {
 }
 
 .activity-form__actions {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  column-gap: 10px;
+  padding-left: 28px;
 }
 
 .activity-form__actions .button {
-  grid-column: 2;
   justify-self: start;
 }
 
@@ -660,10 +660,10 @@ h2 {
   }
 
   .activity-form__actions {
-    grid-template-columns: 1fr;
+    padding-left: 0;
   }
 
   .activity-form__actions .button {
-    grid-column: 1;
+    grid-column: auto;
   }
 }
