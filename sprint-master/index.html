@@ -8,20 +8,92 @@
 </head>
 <body>
   <main class="app">
-    <header>
-      <h1>Sprint Master</h1>
-      <p>MVP em preparação para gestão de projetos de pesquisa.</p>
+    <header class="hero">
+      <div class="brand">
+        <img class="brand__logo" src="./assets/ifsp-logo.png" alt="Logotipo do IFSP">
+        <div>
+          <p class="brand__eyebrow">SPOENG1 • Engenharia de Software 1</p>
+          <h1>Sprint Master</h1>
+          <p class="brand__summary">
+            Cadastro simples de projetos de pesquisa com persistência local e visão clara da sprint.
+          </p>
+        </div>
+      </div>
+      <div class="hero__note">
+        <strong>MVP atual</strong>
+        <span>Cadastro e listagem de projetos com armazenamento em `localStorage`.</span>
+      </div>
     </header>
 
-    <section>
-      <h2>Próximas entregas</h2>
-      <ul>
-        <li>Cadastro de projetos</li>
-        <li>Cadastro de atividades</li>
-        <li>Dashboard simples</li>
-        <li>Persistência com localStorage</li>
-      </ul>
+    <section class="dashboard" aria-labelledby="dashboard-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-heading__eyebrow">Visão geral</p>
+          <h2 id="dashboard-title">Dashboard inicial</h2>
+        </div>
+      </div>
+      <div class="dashboard__grid">
+        <article class="metric">
+          <span class="metric__label">Projetos cadastrados</span>
+          <strong class="metric__value" id="total-projects">0</strong>
+        </article>
+        <article class="metric">
+          <span class="metric__label">Projetos com prazo</span>
+          <strong class="metric__value" id="projects-with-deadline">0</strong>
+        </article>
+        <article class="metric">
+          <span class="metric__label">Próximo prazo</span>
+          <strong class="metric__value metric__value--small" id="next-deadline">Nenhum</strong>
+        </article>
+      </div>
     </section>
+
+    <div class="content-grid">
+      <section class="panel" aria-labelledby="project-form-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-heading__eyebrow">Cadastro</p>
+            <h2 id="project-form-title">Novo projeto</h2>
+          </div>
+        </div>
+
+        <form id="project-form" class="project-form">
+          <label class="field">
+            <span>Nome do projeto</span>
+            <input type="text" name="name" maxlength="80" placeholder="Ex.: Plataforma de Iniciação Científica" required>
+          </label>
+
+          <label class="field">
+            <span>Descrição</span>
+            <textarea name="description" rows="4" maxlength="240" placeholder="Resumo curto do objetivo do projeto."></textarea>
+          </label>
+
+          <label class="field">
+            <span>Prazo</span>
+            <input type="date" name="deadline">
+          </label>
+
+          <button type="submit" class="button">Salvar projeto</button>
+          <p id="form-feedback" class="form-feedback" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="projects-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-heading__eyebrow">Projetos</p>
+            <h2 id="projects-title">Lista atual</h2>
+          </div>
+        </div>
+
+        <div id="projects-empty-state" class="empty-state">
+          <p>Nenhum projeto cadastrado ainda.</p>
+          <span>Use o formulário ao lado para criar o primeiro registro da sprint.</span>
+        </div>
+
+        <div id="projects-list" class="projects-list" aria-live="polite"></div>
+      </section>
+    </div>
   </main>
 
   <script src="./script.js"></script>
