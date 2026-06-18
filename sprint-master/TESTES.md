@@ -32,10 +32,13 @@ Preencha o campo `Status` com `OK`, `Falhou` ou `Não executado`. Se houver prob
 | Exportar JSON completo | Abrir o painel JSON e clicar em exportar no escopo `Tudo` | Campo mostra responsáveis e projetos em JSON válido | Pendente |
 | Importar projetos por JSON | Selecionar escopo `Projetos` e importar um JSON válido | Lista de projetos é substituída pelos itens importados | Pendente |
 | Importar responsáveis por JSON | Selecionar escopo `Responsáveis` e importar um JSON válido | Lista de responsáveis é atualizada e persiste | Pendente |
+| Rejeitar JSON inválido por escopo | Selecionar um escopo e tentar importar um objeto sem a chave esperada | Sistema exibe erro e preserva o estado anterior | Pendente |
+| Persistir responsáveis vazios | Remover todos os responsáveis sem uso, recarregar a página e exportar `Responsáveis` | Lista continua vazia após o recarregamento e a exportação | Pendente |
 | Copiar JSON | Clicar no botão de copiar no painel JSON | Conteúdo atual é copiado para a área de transferência | Pendente |
 
 ## Observações
 
 - Recomenda-se testar primeiro com o `localStorage` limpo.
 - Ao testar importação de JSON, validar tanto o escopo `Tudo` quanto os escopos parciais.
+- Se um JSON de projetos trouxer atividades com responsáveis ainda ausentes na lista, confirmar se esses nomes reaparecem na área de responsáveis após a importação.
 - Se houver divergência entre comportamento e documentação, registrar primeiro em `README.md` ou no histórico da sprint.

@@ -120,12 +120,13 @@ function migrateLegacyState() {
     const rawProjects = localStorage.getItem(LEGACY_PROJECTS_STORAGE_KEY);
     const legacyMembers = rawMembers ? JSON.parse(rawMembers) : DEFAULT_MEMBERS;
     const legacyProjects = rawProjects ? JSON.parse(rawProjects) : [];
-    const normalizedMembers = normalizeMembers(legacyMembers);
     const normalizedProjects = normalizeProjects(legacyProjects);
+    const nextProjects = normalizedProjects.length > 0 ? normalizedProjects : createSeedProjects();
+    const normalizedMembers = syncMembersWithProjects(normalizeMembers(legacyMembers), nextProjects);
 
     return {
       members: normalizedMembers,
-      projects: normalizedProjects.length > 0 ? normalizedProjects : createSeedProjects()
+      projects: nextProjects
     };
   } catch (error) {
     console.error("Erro ao migrar o estado legado:", error);
@@ -152,9 +153,15 @@ function normalizeStatus(status) {
   return VALID_STATUS.has(normalized) ? normalized : "a fazer";
 }
 
-function normalizeMembers(rawMembers) {
+function hasMemberName(memberList, name) {
+  return memberList.some(
+    (currentMember) => currentMember.localeCompare(name, "pt-BR", { sensitivity: "base" }) === 0
+  );
+}
+
+function normalizeMembers(rawMembers, fallbackMembers = DEFAULT_MEMBERS) {
   if (!Array.isArray(rawMembers)) {
-    return [...DEFAULT_MEMBERS];
+    return [...fallbackMembers];
   }
 
   const uniqueMembers = [];
@@ -166,16 +173,12 @@ function normalizeMembers(rawMembers) {
       return;
     }
 
-    const exists = uniqueMembers.some(
-      (currentMember) => currentMember.localeCompare(name, "pt-BR", { sensitivity: "base" }) === 0
-    );
-
-    if (!exists) {
+    if (!hasMemberName(uniqueMembers, name)) {
       uniqueMembers.push(name);
     }
   });
 
-  return uniqueMembers.length > 0 ? uniqueMembers : [...DEFAULT_MEMBERS];
+  return uniqueMembers;
 }
 
 function normalizeActivities(rawActivities) {
@@ -227,31 +230,62 @@ function normalizeProjects(rawProjects) {
     .filter(Boolean);
 }
 
+function syncMembersWithProjects(baseMembers, baseProjects) {
+  const syncedMembers = [...baseMembers];
+
+  baseProjects.forEach((project) => {
+    project.activities.forEach((activity) => {
+      const responsible = String(activity.responsible || "").trim();
+
+      if (responsible && !hasMemberName(syncedMembers, responsible)) {
+        syncedMembers.push(responsible);
+      }
+    });
+  });
+
+  return syncedMembers;
+}
+
 function normalizeImportedState(rawValue, scope) {
   if (scope === "members") {
-    const membersValue = Array.isArray(rawValue) ? rawValue : rawValue?.resp;
+    const membersValue = Array.isArray(rawValue) ? rawValue : rawValue?.resp ?? rawValue?.members;
+
+    if (!Array.isArray(membersValue)) {
+      throw new Error("Escopo de responsáveis inválido.");
+    }
 
     return {
-      members: normalizeMembers(membersValue),
+      members: syncMembersWithProjects(normalizeMembers(membersValue, []), projects),
       projects: [...projects]
     };
   }
 
   if (scope === "projects") {
-    const projectsValue = Array.isArray(rawValue) ? rawValue : rawValue?.proj;
+    const projectsValue = Array.isArray(rawValue) ? rawValue : rawValue?.proj ?? rawValue?.projects;
+
+    if (!Array.isArray(projectsValue)) {
+      throw new Error("Escopo de projetos inválido.");
+    }
+
+    const normalizedProjects = normalizeProjects(projectsValue);
 
     return {
-      members: [...members],
-      projects: normalizeProjects(projectsValue)
+      members: syncMembersWithProjects([...members], normalizedProjects),
+      projects: normalizedProjects
     };
   }
 
   const importedMembers = rawValue?.resp ?? rawValue?.members;
   const importedProjects = rawValue?.proj ?? rawValue?.projects;
+  if (!Array.isArray(importedMembers) || !Array.isArray(importedProjects)) {
+    throw new Error("Estrutura principal inválida.");
+  }
+
+  const normalizedProjects = normalizeProjects(importedProjects);
 
   return {
-    members: normalizeMembers(importedMembers),
-    projects: normalizeProjects(importedProjects)
+    members: syncMembersWithProjects(normalizeMembers(importedMembers, []), normalizedProjects),
+    projects: normalizedProjects
   };
 }
 
@@ -757,7 +791,7 @@ function handleMemberSubmit(event) {
     return;
   }
 
-  if (members.some((member) => member.localeCompare(memberName, "pt-BR", { sensitivity: "base" }) === 0)) {
+  if (hasMemberName(members, memberName)) {
     setMemberFeedback("Esse responsável já existe.", true);
     return;
   }
