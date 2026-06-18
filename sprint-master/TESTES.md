@@ -2,10 +2,10 @@
 
 ## Ambiente
 
-- Navegador:
-- Sistema operacional:
-- Data:
-- Responsável pela execução:
+- Navegador: Google Chrome Versão 149.0.7827.155 64 bits
+- Sistema operacional: Windows 10 Home Single Language Versão 22H2
+- Data: 06/06/2026
+- Responsável pela execução: Lucas Toffetti Cintra de Pinheiro
 
 ## Orientação
 
